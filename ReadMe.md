@@ -3,7 +3,7 @@
 ## Step 1: 
 
 - Create your application
-- Add health checks and monitoring via the [Program.cs]()
+- Add health checks and monitoring via the [Program.cs](https://github.com/abbiehooper/CicdDemo/blob/master/Program.cs)
 
 **Test it:**
 ```powershell
@@ -13,8 +13,8 @@ dotnet run
 ```
 
 ## Step 2:
-- Dockerize it. [Dockerfile]()
-- Add a [.dockerignore]() file.
+- Dockerize it [Dockerfile Example](https://github.com/abbiehooper/CicdDemo/blob/master/Dockerfile)
+- Add a [.dockerignore](https://github.com/abbiehooper/CicdDemo/blob/master/.dockerignore) file
 
 **Test it:** 
 ```powershell
