@@ -26,3 +26,4 @@ docker run -p 8080:8080 cicd-demo:local
 
 # Test the health endpoint (PowerShell equivalent)
 Invoke-WebRequest http://localhost:8080/health
+```
