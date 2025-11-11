@@ -1,4 +1,36 @@
-﻿bin/
+﻿# Build artifacts
+bin/
 obj/
-*.user
+out/
+
+# Visual Studio
 .vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Solution file - don't copy this!
+*.sln
+
+# Docker files
+Dockerfile
+Dockerfile.*
+.dockerignore
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Any other non-essential files
+*.log
+*.http
