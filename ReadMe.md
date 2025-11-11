@@ -13,6 +13,9 @@ dotnet run
 ```
 
 ## Step 2:
+
+For step 2, ensure you have Docker installed on your machine.
+
 - Dockerize it [Dockerfile Example](https://github.com/abbiehooper/CicdDemo/blob/master/Dockerfile)
 - Add a [.dockerignore](https://github.com/abbiehooper/CicdDemo/blob/master/.dockerignore) file
 
