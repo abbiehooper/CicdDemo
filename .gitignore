@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Github SSH keys
+github-actions-key
+github-actions-key.pub
+*.pem

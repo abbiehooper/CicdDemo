@@ -1,0 +1,82 @@
+﻿name: Build and Deploy
+
+# Every time you push to master, this workflow will run
+on:
+  push:
+    branches: [ master ]
+
+# Environment variables
+env:
+  REGISTRY: ghcr.io # Push Docker images to GitHub Container Registry (free)
+  IMAGE_NAME: ${{ github.repository }} # This will automatically set the image name to your repo name
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # GitHub spins up a Ubuntu virtual machine to run your build.
+    permissions:
+      contents: read # Can read your code
+      packages: write # Can publish Docker images to GitHub Container Registry
+    
+    steps:
+      - uses: actions/checkout@v4 # Downloads your code from GitHub onto the Ubuntu machine.
+      
+      - name: Log in to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }} # This will automatically use your GitHub username
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          build-args: APP_VERSION=${{ github.sha }}
+      
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            # Pull new image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            # Deploy with zero downtime
+            docker run -d \
+              --name cicd-demo-new \
+              -p 8081:8080 \
+              -e APP_VERSION=${{ github.sha }} \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            # Wait for health check
+            for i in {1..30}; do
+              if curl -f http://localhost:8081/health > /dev/null 2>&1; then
+                echo "✅ New container healthy!"
+                
+                # Switch traffic (stop old, promote new)
+                docker stop cicd-demo || true
+                docker rm cicd-demo || true
+                docker stop cicd-demo-new
+                docker rename cicd-demo-new cicd-demo
+                
+                docker run -d \
+                  --name cicd-demo \
+                  --restart unless-stopped \
+                  -p 8080:8080 \
+                  -e APP_VERSION=${{ github.sha }} \
+                  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                
+                echo "🎉 Deployment complete!"
+                exit 0
+              fi
+              sleep 2
+            done
+            
+            echo "❌ Health check failed, rolling back"
+            docker stop cicd-demo-new
+            docker rm cicd-demo-new
+            exit 1
