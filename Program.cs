@@ -4,10 +4,32 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
+// Configure JSON logging
+builder.Logging.ClearProviders();
+builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+});
+
 var app = builder.Build();
 
 var startTime = Stopwatch.StartNew();
 var requestCount = 0;
+
+// Request logging middleware
+app.Use(async (context, next) =>
+{
+    var sw = Stopwatch.StartNew();
+    await next();
+
+    app.Logger.LogInformation(
+        "Request: {Method} {Path} -> {Status} in {Duration}ms",
+        context.Request.Method,
+        context.Request.Path,
+        context.Response.StatusCode,
+        sw.ElapsedMilliseconds);
+});
 
 app.MapGet("/", () =>
 {

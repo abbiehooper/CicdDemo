@@ -90,6 +90,8 @@ Get-Content github-actions-key | Set-Clipboard
 ```
 Paste it into the "Value" field when creating the secret.
 
+Make sure to add the github-actions-key files to your .gitignore to avoid committing them to your repository.
+
 ## Step 6: Deploy!
 Push your code to GitHub. This will trigger the GitHub Actions workflow.
 Monitor the Actions tab in your repository to see the deployment progress.
