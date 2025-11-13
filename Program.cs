@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ app.MapGet("/", () =>
 
     return new
     {
-        Message = "Hello from CI/CD Pipeline!",
+        Message = "Hello from Azure - Auto Deployed! 🚀",
         Version = Environment.GetEnvironmentVariable("APP_VERSION") ?? "1.0.0",
         Uptime = $"{startTime.Elapsed.TotalSeconds:F0}s",
         RequestCount = requestCount
