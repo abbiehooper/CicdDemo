@@ -8,7 +8,7 @@ on:
 # Environment variables
 env:
   REGISTRY: ghcr.io # Push Docker images to GitHub Container Registry (free)
-  IMAGE_NAME: ${{ github.repository }} # This will automatically set the image name to your repo name
+  IMAGE_NAME: ${{ github.repository_owner }} # This will automatically set the image name to your repo name
 
 jobs:
   deploy:
