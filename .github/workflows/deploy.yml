@@ -39,62 +39,66 @@ jobs:
       
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.0
-        env:
-          IMAGE_NAME_LOWER: ${{ env.IMAGE_NAME_LOWER }}
-          REGISTRY: ${{ env.REGISTRY }}
-          COMMIT_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          envs: IMAGE_NAME_LOWER,REGISTRY,COMMIT_SHA
+          timeout: 60s
+          command_timeout: 10m
           script: |
-            IMAGE="${REGISTRY}/${IMAGE_NAME_LOWER}:latest"
+            IMAGE="ghcr.io/abbiehooper/cicddemo:latest"
             
-            echo "🚀 Deploying image: $IMAGE"
-            
-            # Clean up any leftover containers from failed deployments
+            # Clean up any leftover containers
             docker stop cicd-demo-new 2>/dev/null || true
             docker rm cicd-demo-new 2>/dev/null || true
             
             # Pull new image
             docker pull $IMAGE
             
-            # Deploy with zero downtime
+            # Start new container on port 8081 for testing
             docker run -d \
               --name cicd-demo-new \
               -p 8081:8080 \
-              -e APP_VERSION=$COMMIT_SHA \
+              -e APP_VERSION=${{ github.sha }} \
               $IMAGE
             
             # Wait for health check
-            echo "⏳ Waiting for health check..."
+            echo "Waiting for health check..."
             for i in {1..30}; do
               if curl -f http://localhost:8081/health > /dev/null 2>&1; then
-                echo "✅ New container healthy!"
+                echo "✅ New container is healthy!"
                 
-                # Switch traffic (stop old, promote new)
-                docker stop cicd-demo || true
-                docker rm cicd-demo || true
+                # Stop and remove old container
+                docker stop cicd-demo 2>/dev/null || true
+                docker rm cicd-demo 2>/dev/null || true
+                
+                # Remove the test container
                 docker stop cicd-demo-new
-                docker rename cicd-demo-new cicd-demo
+                docker rm cicd-demo-new
                 
+                # Start the final container on port 8080
                 docker run -d \
                   --name cicd-demo \
                   --restart unless-stopped \
                   -p 8080:8080 \
-                  -e APP_VERSION=$COMMIT_SHA \
+                  -e APP_VERSION=${{ github.sha }} \
                   $IMAGE
                 
-                echo "🎉 Deployment complete!"
-                exit 0
+                # Verify it started
+                sleep 3
+                if docker ps | grep -q cicd-demo; then
+                  echo "🎉 Deployment complete!"
+                  exit 0
+                else
+                  echo "❌ Final container failed to start"
+                  exit 1
+                fi
               fi
-              echo "Attempt $i/30: Not ready yet..."
+              echo "Attempt $i: Not ready yet..."
               sleep 2
             done
             
             echo "❌ Health check failed, rolling back"
-            docker logs cicd-demo-new
             docker stop cicd-demo-new
             docker rm cicd-demo-new
             exit 1
