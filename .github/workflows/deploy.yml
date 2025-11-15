@@ -5,18 +5,18 @@ on:
     branches: [ master ]
 
 env:
-  REGISTRY: ghcr.io # Push Docker images to GitHub Container Registry (free)
-  IMAGE_NAME: ${{ github.repository }} # This will automatically set the image name to your repo name
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest # GitHub spins up a Ubuntu virtual machine to run your build.
+    runs-on: ubuntu-latest
     permissions:
-      contents: read # Can read your code
-      packages: write # Can publish Docker images to GitHub Container Registry
+      contents: read
+      packages: write
     
     steps:
-      - uses: actions/checkout@v4 # Downloads your code from GitHub onto the Ubuntu machine.
+      - uses: actions/checkout@v4
       
       - name: Set lowercase image name
         run: |
@@ -26,7 +26,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }} # This will automatically use your GitHub username
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build and Push
@@ -39,28 +39,36 @@ jobs:
       
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.0
+        env:
+          IMAGE_NAME_LOWER: ${{ env.IMAGE_NAME_LOWER }}
+          REGISTRY: ${{ env.REGISTRY }}
+          COMMIT_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: IMAGE_NAME_LOWER,REGISTRY,COMMIT_SHA
           script: |
-            IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest"
+            IMAGE="${REGISTRY}/${IMAGE_NAME_LOWER}:latest"
             
-            # Pull new image
-            docker pull $IMAGE
-
+            echo "🚀 Deploying image: $IMAGE"
+            
             # Clean up any leftover containers from failed deployments
             docker stop cicd-demo-new 2>/dev/null || true
             docker rm cicd-demo-new 2>/dev/null || true
+            
+            # Pull new image
+            docker pull $IMAGE
             
             # Deploy with zero downtime
             docker run -d \
               --name cicd-demo-new \
               -p 8081:8080 \
-              -e APP_VERSION=${{ github.sha }} \
+              -e APP_VERSION=$COMMIT_SHA \
               $IMAGE
             
             # Wait for health check
+            echo "⏳ Waiting for health check..."
             for i in {1..30}; do
               if curl -f http://localhost:8081/health > /dev/null 2>&1; then
                 echo "✅ New container healthy!"
@@ -75,16 +83,18 @@ jobs:
                   --name cicd-demo \
                   --restart unless-stopped \
                   -p 8080:8080 \
-                  -e APP_VERSION=${{ github.sha }} \
+                  -e APP_VERSION=$COMMIT_SHA \
                   $IMAGE
                 
                 echo "🎉 Deployment complete!"
                 exit 0
               fi
+              echo "Attempt $i/30: Not ready yet..."
               sleep 2
             done
             
             echo "❌ Health check failed, rolling back"
+            docker logs cicd-demo-new
             docker stop cicd-demo-new
             docker rm cicd-demo-new
             exit 1
