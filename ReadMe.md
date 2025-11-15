@@ -97,6 +97,29 @@ Push your code to GitHub. This will trigger the GitHub Actions workflow.
 Monitor the Actions tab in your repository to see the deployment progress.
 Once complete, your application should be live on your server!
 
+### Your complete pipeline flow: 
+
+1. Push code to GitHub (master branch)
+   ↓
+2. GitHub Actions triggers automatically
+   ↓
+3. Builds Docker image with .NET 9.0
+   ↓
+4. Pushes to GitHub Container Registry
+   ↓
+5. SSHs to Server
+   ↓
+6. Pulls latest image
+   ↓
+7. Tests new container on port 8081
+   ↓
+8. Health check validates it's working
+   ↓
+9. Switches to port 8080 (production)
+   ↓
+10. Old container removed
+    ↓
+11. ✨ Live in production!
 
 
 
