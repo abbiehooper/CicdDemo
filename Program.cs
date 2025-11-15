@@ -39,13 +39,19 @@ app.MapGet("/", () =>
     return new
     {
         Message = "Hello from Azure - Auto Deployed! 🚀",
-        Version = Environment.GetEnvironmentVariable("APP_VERSION") ?? "1.0.0",
-        Uptime = $"{startTime.Elapsed.TotalSeconds:F0}s",
-        RequestCount = requestCount
     };
 });
 
 app.MapHealthChecks("/health");
+
+app.MapGet("/metrics", () => new
+{
+    UptimeSeconds = (int)startTime.Elapsed.TotalSeconds,
+    MemoryMB = GC.GetTotalMemory(false) / 1024 / 1024,
+    Version = Environment.GetEnvironmentVariable("APP_VERSION") ?? "unknown",
+    RequestCount = requestCount,
+    Timestamp = DateTime.UtcNow
+});
 
 app.MapGet("/ready", () => Results.Ok(new
 {
