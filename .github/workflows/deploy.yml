@@ -44,11 +44,14 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            # Use lowercase image name
             IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest"
             
             # Pull new image
             docker pull $IMAGE
+
+            # Clean up any leftover containers from failed deployments
+            docker stop cicd-demo-new 2>/dev/null || true
+            docker rm cicd-demo-new 2>/dev/null || true
             
             # Deploy with zero downtime
             docker run -d \
