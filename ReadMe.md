@@ -79,9 +79,9 @@ If you add a passphrase, the workflow will fail because it can't interactively a
 
 Add these secrets to GitHub (Settings → Secrets):
 
-DEPLOY_HOST - Your server IP
-DEPLOY_USER - SSH username
-DEPLOY_SSH_KEY - github-actions-key 
+- **DEPLOY_HOST** - Your server IP
+- **DEPLOY_USER** - SSH username
+- **DEPLOY_SSH_KEY** - github-actions-key 
 
 To get the private key content, run:
 
