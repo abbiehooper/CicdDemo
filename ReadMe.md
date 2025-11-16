@@ -47,7 +47,7 @@ GitHub Actions is a CI/CD tool built into GitHub. When you push code, it can aut
 ### Create a GitHub Actions Workflow
 
 - Create a `.github/workflows` directory in your repository
-- Add a workflow YAML file, e.g., [deploy.yml]()
+- Add a workflow YAML file, e.g., [deploy.yml](https://github.com/abbiehooper/CicdDemo/blob/master/.github/workflows/deploy.yml)
 
 
 ## Step 4: Set up a Server
