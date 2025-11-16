@@ -1,7 +1,5 @@
 ﻿# How to build a CI/CD Pipeline with Health Checks and Monitoring
 
-# How to build a CI/CD Pipeline with Health Checks and Monitoring
-
 ## Table of Contents
 - [Step 1: Create Your Application](#step-1)
 - [Step 2: Dockerize](#step-2)
