@@ -1,5 +1,23 @@
 ﻿# How to build a CI/CD Pipeline with Health Checks and Monitoring
 
+# How to build a CI/CD Pipeline with Health Checks and Monitoring
+
+## Table of Contents
+- [Step 1: Create Your Application](#step-1)
+- [Step 2: Dockerize](#step-2)
+- [Step 3: GitHub Actions](#step-3)
+- [Step 4: Set up a Server](#step-4)
+- [Step 5: GitHub Secrets](#step-5)
+- [Step 6: Deploy](#step-6-deploy)
+- [Troubleshooting](#troubleshooting)
+
+## Prerequisites
+
+Before starting, ensure you have:
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download) installed
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- A GitHub account
+
 ## Step 1: 
 
 - Create your application
@@ -120,6 +138,23 @@ Once complete, your application should be live on your server!
 10. Old container removed
     ↓
 11. ✨ Live in production!
+
+### What You've Built
+
+This pipeline includes:
+- ✅ Automated builds on every push to master
+- ✅ Docker containerization for consistency
+- ✅ Zero-downtime deployments with health checks
+- ✅ Automatic rollback on failures
+- ✅ Structured JSON logging
+- ✅ Metrics endpoint for monitoring
+- ✅ Security best practices (non-root user, SSH keys)
+
+**Your Application Endpoints:**
+- Main app: `http://YOUR_IP:8080/`
+- Health check: `http://YOUR_IP:8080/health`
+- Metrics: `http://YOUR_IP:8080/metrics`
+- Readiness: `http://YOUR_IP:8080/ready`
 
 ## Troubleshooting
 
@@ -278,7 +313,7 @@ docker run -d \
   ghcr.io/yourusername/cicddemo:latest
 ```
 
-**4.VM firewall blocking the port**
+**4. VM firewall blocking the port**
 ```bash
 # Check if UFW is active
 sudo ufw status
